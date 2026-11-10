@@ -209,6 +209,10 @@ void bongo_cat_live2d_cancel_texture_refresh(BongoCatLive2D *live2d);
 bool bongo_cat_live2d_refresh_textures(BongoCatLive2D *live2d,
     bool active, bool allow_start);
 bool bongo_cat_live2d_update(BongoCatLive2D *live2d, float delta_seconds);
+/* Supply the voiced microphone RMS, or 0 when there is no voice. */
+void bongo_cat_live2d_set_microphone_level(BongoCatLive2D *live2d, float rms);
+void bongo_cat_live2d_set_side_mouse_buttons(BongoCatLive2D *live2d, bool back, bool forward);
+bool bongo_cat_live2d_pulse_scroll_wheel(BongoCatLive2D *live2d);
 void bongo_cat_live2d_draw(BongoCatLive2D *live2d);
 void bongo_cat_live2d_set_mirror(BongoCatLive2D *live2d, bool mirror);
 void bongo_cat_live2d_set_vertical_flip(BongoCatLive2D *live2d, bool flipped);

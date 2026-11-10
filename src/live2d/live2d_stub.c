@@ -139,6 +139,15 @@ bool bongo_cat_live2d_texture_refresh_busy(const BongoCatLive2D *live2d) {
 void bongo_cat_live2d_cancel_texture_refresh(BongoCatLive2D *live2d) {
     (void)live2d;
 }
+void bongo_cat_live2d_set_microphone_level(BongoCatLive2D *live2d, float rms) {
+    (void)live2d; (void)rms;
+}
+void bongo_cat_live2d_set_side_mouse_buttons(BongoCatLive2D *live2d, bool back, bool forward) {
+    (void)live2d; (void)back; (void)forward;
+}
+bool bongo_cat_live2d_pulse_scroll_wheel(BongoCatLive2D *live2d) {
+    (void)live2d; return false;
+}
 void bongo_cat_live2d_draw(BongoCatLive2D *live2d) { (void)live2d; }
 void bongo_cat_live2d_set_vertical_flip(BongoCatLive2D *live2d, bool flipped) {
     (void)live2d; (void)flipped;

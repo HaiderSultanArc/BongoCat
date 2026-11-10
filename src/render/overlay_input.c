@@ -1,6 +1,7 @@
 #include "overlay_internal.h"
 #include "bongo_cat/path.h"
 
+#include <SDL3/SDL_stdinc.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -34,6 +35,14 @@ int bongo_cat_overlay_key(BongoCatOverlay *value, const char *name, bool pressed
 #ifdef BONGO_CAT_HAS_CUBISM
         *active = bongo_cat_overlay_cached_texture(value, path);
         if (!*active) value->input_texture_failures++;
+        if (value->key_colors) {
+            static const int colors[] = {0xff727a, 0xffb349, 0xffec64, 0x83f57d,
+                0x56e7d7, 0x70b8ff, 0xbd92ff, 0xff8bd7};
+            int *tint = right ? &value->right_tint : &value->left_tint;
+            int index = SDL_rand(SDL_arraysize(colors));
+            if (colors[index] == *tint) index = (index + 1) % SDL_arraysize(colors);
+            *tint = colors[index];
+        }
 #else
         snprintf(active_path, BONGO_CAT_PATH_CAP, "%s", path);
         *active = 1;
@@ -47,6 +56,12 @@ int bongo_cat_overlay_key(BongoCatOverlay *value, const char *name, bool pressed
     value->composite_dirty = true;
 #endif
     return right ? 1 : 0;
+}
+
+void bongo_cat_overlay_set_key_colors(BongoCatOverlay *value, bool enabled) {
+    if (!value) return;
+    value->key_colors = enabled;
+    value->left_tint = value->right_tint = 0;
 }
 
 bool bongo_cat_overlay_hand_active(const BongoCatOverlay *value, bool right) {

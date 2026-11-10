@@ -263,6 +263,15 @@ extern "C" bool bongo_cat_live2d_texture_refresh_busy(const BongoCatLive2D *runt
 extern "C" void bongo_cat_live2d_cancel_texture_refresh(BongoCatLive2D *runtime) {
     if (runtime && runtime->model) runtime->model->cancel_texture_refresh_async();
 }
+extern "C" void bongo_cat_live2d_set_microphone_level(BongoCatLive2D *runtime, float rms) {
+    if (runtime && runtime->model) runtime->model->set_microphone_level(rms);
+}
+extern "C" void bongo_cat_live2d_set_side_mouse_buttons(BongoCatLive2D *runtime, bool back, bool forward) {
+    if (runtime && runtime->model) runtime->model->set_side_mouse_buttons(back, forward);
+}
+extern "C" bool bongo_cat_live2d_pulse_scroll_wheel(BongoCatLive2D *runtime) {
+    return runtime && runtime->model && runtime->model->pulse_scroll_wheel();
+}
 extern "C" void bongo_cat_live2d_draw(BongoCatLive2D *runtime) {
     if (!runtime) return;
     if (runtime->model) runtime->model->draw();

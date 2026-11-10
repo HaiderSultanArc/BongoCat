@@ -45,6 +45,7 @@ void test_config(void) {
     CHECK(!settings.window.pass_through);
     CHECK(!settings.app.game_compatibility);
     settings.app.game_compatibility = true;
+    CHECK(!settings.app.microphone_capture);
     settings.model.max_fps = 30;
     settings.model.multiple_pets = true;
     CHECK(!settings.model.vertical_flip);
@@ -63,6 +64,7 @@ void test_config(void) {
     settings.window.random_motion_interval_seconds = 17.0f;
     settings.window.obs_background_color = BONGO_CAT_OBS_BACKGROUND_BLUE;
     settings.app.language = BONGO_CAT_LANG_ZH_CN;
+    settings.app.microphone_capture = true;
     memcpy(settings.extensions_json, "{\"example\":{\"enabled\":true}}",
         sizeof("{\"example\":{\"enabled\":true}}"));
     settings.behavior_shortcut_count = 1;
@@ -134,6 +136,7 @@ void test_config(void) {
     bongo_cat_session_defaults(&loaded_session);
     CHECK(bongo_cat_settings_load(settings_path, &loaded_settings, &error) ==
         BONGO_CAT_OK);
+    CHECK(loaded_settings.app.microphone_capture);
     CHECK(bongo_cat_session_load(session_path, &loaded_session, &error) ==
         BONGO_CAT_OK);
     CHECK(loaded_settings.model.max_fps == 30 && loaded_settings.model.mirror &&

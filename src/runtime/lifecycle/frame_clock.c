@@ -43,6 +43,8 @@ int bongo_cat_window_wait_timeout(const BongoCatApp *app, uint64_t now) {
         wait_ms = 8;
     if (bongo_cat_preferences_needs_frame(app->preferences) && wait_ms > 4)
         wait_ms = 4;
+    if (wait_ms > 50 && bongo_cat_preferences_showing_microphone(app->preferences))
+        wait_ms = 50;
     if (app->wheel_animation_active) {
         int wheel_wait = remaining_ms(app->wheel_animation_ns +
             BONGO_CAT_WHEEL_FRAME_INTERVAL_NS, now);

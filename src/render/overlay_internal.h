@@ -25,6 +25,7 @@ struct BongoCatOverlay {
     GLint reference_height_location;
     GLint erase_left_location;
     GLint erase_right_location;
+    GLint key_tint_location;
     GLuint vao;
     GLuint vbo;
     GLuint background;
@@ -33,6 +34,9 @@ struct BongoCatOverlay {
     bool clean_paws;
     bool composite_dirty;
     bool model_pointer_preferred;
+    bool background_fills_canvas;
+    bool key_colors;
+    int left_tint, right_tint;
     int reference_width;
     int reference_height;
     TextureSlot cache[4];

@@ -1,7 +1,12 @@
 #include "cubism_core_profile.hpp"
 #include "cubism_runtime.hpp"
 #include <SDL3/SDL.h>
+#include <stb_image_write.h>
 #include <cstdio>
+
+extern "C" {
+#include "bongo_cat/overlay.h"
+}
 
 #define CHECK(condition) do { if (!(condition)) { \
     std::fprintf(stderr, "Failed at line %d: %s (%s)\n", __LINE__, \
@@ -12,6 +17,51 @@ static GLuint shader(GLenum type, const char *source) {
     glShaderSource(result, 1, &source, nullptr);
     glCompileShader(result);
     return result;
+}
+
+static int test_scaled_background() {
+    char root[BONGO_CAT_PATH_CAP], resources[BONGO_CAT_PATH_CAP];
+    char background[BONGO_CAT_PATH_CAP];
+    SDL_snprintf(root, sizeof(root), "%sbackground-test-%llu",
+        SDL_GetBasePath(), (unsigned long long)SDL_GetTicksNS());
+    SDL_snprintf(resources, sizeof(resources), "%s/resources", root);
+    SDL_snprintf(background, sizeof(background), "%s/background.png", resources);
+    CHECK(SDL_CreateDirectory(resources));
+
+    SDL_Surface *image = SDL_CreateSurface(64, 48, SDL_PIXELFORMAT_RGBA32);
+    CHECK(image);
+    CHECK(SDL_FillSurfaceRect(image, nullptr, SDL_MapSurfaceRGBA(image, 0, 0, 0, 0)));
+    SDL_Rect bottom_right{32, 24, 32, 24};
+    CHECK(SDL_FillSurfaceRect(image, &bottom_right,
+        SDL_MapSurfaceRGBA(image, 255, 255, 255, 255)));
+    CHECK(stbi_write_png(background, image->w, image->h, 4,
+        image->pixels, image->pitch));
+    SDL_DestroySurface(image);
+
+    BongoCatError error{};
+    BongoCatOverlay *overlay = bongo_cat_overlay_create(&error);
+    CHECK(overlay);
+    BongoCatLive2DRenderOptions options{};
+    options.mver_projection = true;
+    options.reference_width = 32;
+    options.reference_height = 24;
+    CHECK(bongo_cat_overlay_load(overlay, root, true, &options, &error) == BONGO_CAT_OK);
+    glClear(GL_COLOR_BUFFER_BIT);
+    bongo_cat_overlay_draw_background(overlay, false);
+    unsigned char pixel[4]{};
+    glReadPixels(28, 4, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    CHECK(pixel[0] == 255);
+
+    CHECK(bongo_cat_overlay_effect(overlay, background));
+    glClear(GL_COLOR_BUFFER_BIT);
+    bongo_cat_overlay_draw_effect(overlay, false);
+    glReadPixels(28, 4, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    CHECK(pixel[0] == 0 && glGetError() == GL_NO_ERROR);
+    bongo_cat_overlay_destroy(overlay);
+    CHECK(SDL_RemovePath(background));
+    CHECK(SDL_RemovePath(resources));
+    CHECK(SDL_RemovePath(root));
+    return 0;
 }
 
 int main() {
@@ -126,6 +176,7 @@ int main() {
     glDeleteProgram(program);
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+    CHECK(test_scaled_background() == 0);
     SDL_GL_DestroyContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();

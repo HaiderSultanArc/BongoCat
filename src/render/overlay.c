@@ -16,11 +16,15 @@ static const char *fragment_source =
     "#version 330 core\n"
     "in vec2 tex; out vec4 color; uniform sampler2D image;\n"
     "uniform bool erase_left;uniform bool erase_right;\n"
+    "uniform int key_tint;\n"
     "void main(){color=texture(image,tex);if(color.a<=.001)discard;"
     "vec2 dl=(tex-vec2(.700,.515))/vec2(.080,.170);"
     "vec2 dr=(tex-vec2(.275,.397))/vec2(.070,.160);"
     "bool l=dot(dl,dl)<1.;bool r=dot(dr,dr)<1.;"
-    "if((erase_left&&l)||(erase_right&&r))color.rgb=vec3(1);color.rgb*=color.a;}";
+    "if((erase_left&&l)||(erase_right&&r))color.rgb=vec3(1);"
+    "if(key_tint!=0){vec3 tint=vec3((key_tint>>16)&255,(key_tint>>8)&255,key_tint&255)/255.;"
+    "float white=smoothstep(.67,.88,min(color.r,min(color.g,color.b)));"
+    "color.rgb=mix(color.rgb,color.rgb*tint,white);}color.rgb*=color.a;}";
 
 BongoCatOverlay *bongo_cat_overlay_create(BongoCatError *error) {
     BongoCatOverlay *value = calloc(1, sizeof(*value));
@@ -39,6 +43,7 @@ BongoCatOverlay *bongo_cat_overlay_create(BongoCatError *error) {
         "reference_height");
     value->erase_left_location = value->gl.uniform_location(value->program, "erase_left");
     value->erase_right_location = value->gl.uniform_location(value->program, "erase_right");
+    value->key_tint_location = value->gl.uniform_location(value->program, "key_tint");
     const float vertices[] = {-1, -1, 0, 1, 1, -1, 1, 1, -1, 1, 0, 0, 1, 1, 1, 0};
     value->gl.gen_vertex_arrays(1, &value->vao);
     value->gl.bind_vertex_array(value->vao);

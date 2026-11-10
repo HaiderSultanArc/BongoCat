@@ -174,6 +174,20 @@ static void test_packets(void) {
     CHECK(bongo_cat_windows_input_take_relative(&test.platform, &x, &y, NULL));
     CHECK(x == 8.0 && y == 0.0);
     CHECK(!bongo_cat_windows_input_take_relative(&test.platform, &x, &y, NULL));
+    packet.data.mouse.lLastX = 0;
+    packet.data.mouse.usButtonFlags = RI_MOUSE_WHEEL;
+    packet.data.mouse.usButtonData = (USHORT)(SHORT)-60;
+    bongo_cat_windows_input_packet(&test.state, &packet, sizeof(packet));
+    BongoCatInputEvent wheel = {0};
+    CHECK(bongo_cat_input_pop(&test.input, &wheel));
+    CHECK(wheel.kind == BONGO_CAT_INPUT_MOUSE_WHEEL &&
+        strcmp(wheel.name, "Vertical") == 0 && wheel.value == -0.5f);
+    packet.data.mouse.usButtonFlags = RI_MOUSE_HWHEEL;
+    packet.data.mouse.usButtonData = 240;
+    bongo_cat_windows_input_packet(&test.state, &packet, sizeof(packet));
+    CHECK(bongo_cat_input_pop(&test.input, &wheel));
+    CHECK(wheel.kind == BONGO_CAT_INPUT_MOUSE_WHEEL &&
+        strcmp(wheel.name, "Horizontal") == 0 && wheel.value == 2.0f);
     bongo_cat_windows_input_packet(&test.state, &packet, 1);
     packet.header.dwSize = sizeof(RAWINPUTHEADER);
     bongo_cat_windows_input_packet(&test.state, &packet, packet.header.dwSize);

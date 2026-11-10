@@ -18,7 +18,8 @@ typedef enum BongoCatInputKind {
     BONGO_CAT_INPUT_MOUSE_UP,
     BONGO_CAT_INPUT_MOUSE_MOVE,
     BONGO_CAT_INPUT_GAMEPAD_BUTTON,
-    BONGO_CAT_INPUT_GAMEPAD_AXIS
+    BONGO_CAT_INPUT_GAMEPAD_AXIS,
+    BONGO_CAT_INPUT_MOUSE_WHEEL
 } BongoCatInputKind;
 
 typedef struct BongoCatInputEvent {

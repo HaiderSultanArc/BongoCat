@@ -77,6 +77,8 @@ static bool write_app(yyjson_mut_doc *doc, yyjson_mut_val *object,
             value->game_compatibility) &&
         yyjson_mut_obj_add_bool(doc, object, "showTrayIcon",
             value->tray_visible) &&
+        yyjson_mut_obj_add_bool(doc, object, "microphoneCapture",
+            value->microphone_capture) &&
         yyjson_mut_obj_add_strcpy(doc, object, "theme",
             bongo_cat_theme_name(value->theme)) &&
         yyjson_mut_obj_add_strcpy(doc, object, "language",

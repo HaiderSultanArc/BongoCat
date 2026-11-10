@@ -366,7 +366,33 @@ static void input_monitoring_section(BongoCatApp *app,
 }
 #endif
 
-static void page_general(BongoCatApp *app, struct nk_context *context) {
+static void microphone_controls(BongoCatPreferences *value, struct nk_context *context) {
+    BongoCatApp *app = value->app;
+    bool *enabled = &app->settings.app.microphone_capture;
+    if (bongo_cat_pref_toggle(context, "microphone-capture", tr(app,
+        "pages.preference.general.labels.microphoneCapture", "Microphone Capture"),
+        "", enabled)) bongo_cat_audio_set_microphone_capture(app->audio, *enabled);
+    if (!*enabled) return;
+
+    bongo_cat_preferences_update_microphone(value);
+    if (value->microphone_percent < 0) {
+        nk_layout_row_dynamic(context, 36.0f, 1);
+        nk_label_wrap(context, tr(app, "pages.preference.general.hints.microphoneUnavailable",
+            "Microphone unavailable. Turn capture off and back on to retry."));
+        return;
+    }
+    nk_layout_row_begin(context, NK_DYNAMIC, 20.0f, 2);
+    nk_layout_row_push(context, 0.45f);
+    nk_label(context, tr(app, "pages.preference.general.labels.microphoneLevel",
+        "Microphone Level"), NK_TEXT_LEFT);
+    nk_layout_row_push(context, 0.55f);
+    nk_size level = (nk_size)value->microphone_percent;
+    nk_progress(context, &level, 100, NK_FIXED);
+    nk_layout_row_end(context);
+}
+
+static void page_general(BongoCatPreferences *value, struct nk_context *context) {
+    BongoCatApp *app = value->app;
     BongoCatApplicationPreferences *options = &app->settings.app;
     // Keep each option in its own native language so the list is recognizable
     // regardless of the language currently used by the settings window.
@@ -382,6 +408,7 @@ static void page_general(BongoCatApp *app, struct nk_context *context) {
     if (bongo_cat_pref_toggle(context, "autostart", tr(app,
         "pages.preference.general.labels.launchOnStartup", "Launch on Startup"), "",
         &options->autostart)) update_autostart(app, old_autostart, old_admin);
+    microphone_controls(value, context);
     section_gap(context, 7);
     bongo_cat_pref_section_icon(context, tr(app,
         "pages.preference.general.labels.appearanceSettings", "Appearance"),
@@ -414,9 +441,9 @@ static void page_general(BongoCatApp *app, struct nk_context *context) {
 #endif
 }
 
-void bongo_cat_preferences_page_settings(BongoCatApp *app,
+void bongo_cat_preferences_page_settings(BongoCatPreferences *value,
     struct nk_context *context) {
-    page_display(app, context);
+    page_display(value->app, context);
     section_gap(context, 10);
-    page_general(app, context);
+    page_general(value, context);
 }

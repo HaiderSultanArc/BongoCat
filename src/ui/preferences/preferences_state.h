@@ -51,6 +51,7 @@ struct BongoCatPreferences {
     BongoCatAboutState about;
     struct nk_user_font support_logs_font;
     int page;
+    int microphone_percent;
     int style_theme;
     BongoCatLanguage font_language;
     nk_rune glyph_ranges[16384];
@@ -179,6 +180,7 @@ void bongo_cat_preferences_assets_abandon(BongoCatPreferences *value);
 void bongo_cat_preferences_model_cover_cache_clear(BongoCatApp *app);
 void bongo_cat_preferences_page_cache_clear(BongoCatPreferences *value,
     int previous_page, int next_page);
+bool bongo_cat_preferences_update_microphone(BongoCatPreferences *value);
 void bongo_cat_preferences_smoke_frame(BongoCatPreferences *value);
 void bongo_cat_preferences_icon_draw(BongoCatPreferences *value,
     struct nk_command_buffer *canvas, int icon, struct nk_rect bounds,

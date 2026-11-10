@@ -15,6 +15,7 @@ void bongo_cat_preferences_close(BongoCatPreferences *preferences);
 bool bongo_cat_preferences_visible(const BongoCatPreferences *preferences);
 bool bongo_cat_preferences_needs_frame(BongoCatPreferences *preferences);
 void bongo_cat_preferences_update(BongoCatPreferences *preferences);
+bool bongo_cat_preferences_showing_microphone(const BongoCatPreferences *preferences);
 void bongo_cat_preferences_model_watch(BongoCatPreferences *preferences,
     uint64_t now);
 void bongo_cat_preferences_input_begin(BongoCatPreferences *preferences);

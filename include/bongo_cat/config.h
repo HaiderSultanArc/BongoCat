@@ -99,6 +99,7 @@ typedef struct BongoCatApplicationPreferences {
     bool autostart;
     bool autostart_admin;
     bool game_compatibility;
+    bool microphone_capture;
     bool tray_visible;
     BongoCatTheme theme;
     BongoCatLanguage language;

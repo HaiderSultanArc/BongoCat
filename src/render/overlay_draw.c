@@ -3,7 +3,7 @@
 #include "bongo_cat/image.h"
 
 static void draw(BongoCatOverlay *value, GLuint texture,
-    bool mirror, bool blend) {
+    bool mirror, bool blend, int tint) {
     if (!value || !texture) return;
     if (blend) {
         glEnable(GL_BLEND);
@@ -14,8 +14,12 @@ static void draw(BongoCatOverlay *value, GLuint texture,
     value->gl.uniform_1i(value->mirror_location, mirror);
     value->gl.uniform_1i(value->vertical_flip_location, value->vertical_flip);
     value->gl.uniform_1i(value->image_location, 0);
-    value->gl.uniform_1i(value->reference_width_location, value->reference_width);
-    value->gl.uniform_1i(value->reference_height_location, value->reference_height);
+    value->gl.uniform_1i(value->key_tint_location, tint);
+    bool full_canvas = texture == value->background && value->background_fills_canvas;
+    value->gl.uniform_1i(value->reference_width_location,
+        full_canvas ? 0 : value->reference_width);
+    value->gl.uniform_1i(value->reference_height_location,
+        full_canvas ? 0 : value->reference_height);
     value->gl.uniform_1i(value->erase_left_location,
         !blend && value->composed_cover && !value->composite &&
             value->left != 0);
@@ -45,14 +49,14 @@ void bongo_cat_overlay_draw_background(BongoCatOverlay *value, bool mirror) {
 #endif
     bool active = value->left || value->right;
     draw(value, active && value->composite ? value->composite :
-        value->background, mirror, false);
+        value->background, mirror, false, 0);
 }
 
 void bongo_cat_overlay_draw_keys(BongoCatOverlay *value, bool mirror) {
     if (!value) return;
 #ifdef BONGO_CAT_HAS_CUBISM
-    draw(value, value->left, mirror, true);
-    draw(value, value->right, mirror, true);
+    draw(value, value->left, mirror, true, value->left_tint);
+    draw(value, value->right, mirror, true, value->right_tint);
 #else
     (void)mirror;
 #endif
@@ -66,7 +70,7 @@ void bongo_cat_overlay_draw_pointer_before_keys(BongoCatOverlay *value) {
 void bongo_cat_overlay_draw_effect(BongoCatOverlay *value, bool mirror) {
     if (!value) return;
 #ifdef BONGO_CAT_HAS_CUBISM
-    draw(value, value->effect, mirror, true);
+    draw(value, value->effect, mirror, true, 0);
 #else
     (void)mirror;
 #endif

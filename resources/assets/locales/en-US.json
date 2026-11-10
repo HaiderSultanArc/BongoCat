@@ -63,6 +63,8 @@
           "appSettings": "Application",
           "launchOnStartup": "Launch on Startup",
           "gameCompatibility": "Game Compatibility Mode",
+          "microphoneCapture": "Microphone Capture",
+          "microphoneLevel": "Microphone Level",
           "showTrayIcon": "Show Tray Icon",
           "appearanceSettings": "Appearance",
           "themeMode": "Theme",
@@ -77,6 +79,7 @@
           "darkMode": "Dark"
         },
         "hints": {
+          "microphoneUnavailable": "Microphone unavailable. Turn capture off and back on to retry.",
           "showTrayIcon": "When enabled, the app icon is displayed in the system tray.",
           "autostartFailed": "Unable to update launch-on-startup settings",
           "inputMonitoringPermission": "Restart after granting it.",
