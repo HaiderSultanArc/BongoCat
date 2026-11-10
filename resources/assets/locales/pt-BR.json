@@ -63,6 +63,8 @@
           "appSettings": "Aplicativo",
           "launchOnStartup": "Iniciar na inicialização",
           "gameCompatibility": "Modo de compatibilidade com jogos",
+          "microphoneCapture": "Captura do microfone",
+          "microphoneLevel": "Nível do microfone",
           "showTrayIcon": "Mostrar ícone na bandeja",
           "appearanceSettings": "Aparência",
           "themeMode": "Tema",
@@ -77,6 +79,7 @@
           "darkMode": "Escuro"
         },
         "hints": {
+          "microphoneUnavailable": "Microfone indisponível. Desative e reative a captura para tentar novamente.",
           "showTrayIcon": "Quando ativado, o ícone do aplicativo é exibido na bandeja do sistema.",
           "autostartFailed": "Não foi possível atualizar a inicialização automática",
           "inputMonitoringPermission": "Reinicie após autorizar.",

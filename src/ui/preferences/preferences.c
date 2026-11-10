@@ -67,6 +67,17 @@ void bongo_cat_preferences_update(BongoCatPreferences *value) {
     bongo_cat_preferences_import_poll(value->import_dialog, value->app);
     bongo_cat_about_refresh(value);
 }
+bool bongo_cat_preferences_showing_microphone(const BongoCatPreferences *value) {
+    return bongo_cat_preferences_visible(value) && value->page == 0 &&
+        value->app->settings.app.microphone_capture;
+}
+bool bongo_cat_preferences_update_microphone(BongoCatPreferences *value) {
+    float level = bongo_cat_audio_microphone_level(value->app->audio);
+    int percent = level < 0.0f ? -1 : (int)(level * 100.0f + 0.5f);
+    bool changed = value->microphone_percent != percent;
+    value->microphone_percent = percent;
+    return changed;
+}
 bool bongo_cat_preferences_needs_frame(BongoCatPreferences *value) {
     if (!value) return false;
     uint64_t now = SDL_GetTicksNS();

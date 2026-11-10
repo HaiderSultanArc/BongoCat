@@ -67,7 +67,7 @@ static bool full_sampling(GLuint texture) {
 }
 
 static std::shared_ptr<ModelTexture> acquire_texture(const std::string &path,
-    bool direct, bool dynamic_resolution, float render_quality_percent,
+    bool direct, bool private_atlas, bool dynamic_resolution, float render_quality_percent,
     int display_width, int display_height,
     int reference_width, int reference_height, int texture_limit,
     BongoCatImageProgress progress, void *userdata, BongoCatError *error) {
@@ -100,7 +100,7 @@ static std::shared_ptr<ModelTexture> acquire_texture(const std::string &path,
         path.c_str());
     // Hash the bytes on every acquisition: edits and same-name replacements
     // must never reuse stale pixels, even when their size/timestamp matches.
-    bool reusable = context && SDL_GetPathInfo(path.c_str(), &before) &&
+    bool reusable = !private_atlas && context && SDL_GetPathInfo(path.c_str(), &before) &&
         before.type == SDL_PATHTYPE_FILE &&
         hash_texture(path, digest, progress, userdata) &&
         same_source(path, before);
@@ -189,6 +189,8 @@ void NativeModel::bind_textures() {
 void NativeModel::release_textures() {
     cancel_texture_refresh();
     textures_.clear();
+    mouse_light_mip_levels_ = 0;
+    for (auto &patch : mouse_light_patches_) patch.clear();
     triangle_alpha_.clear();
     frame_drawables_.clear();
 }
@@ -202,7 +204,10 @@ bool NativeModel::load_textures(BongoCatError *error,
     BongoCatLive2DLoadProgress progress, void *userdata,
     int display_width, int display_height, float render_quality_percent) {
     if (!texture_quality_valid(render_quality_percent)) render_quality_percent = 100.0f;
-    render_quality_percent_ = render_quality_percent;
+    const bool private_atlas = has_hs_avatar();
+    // Mouse lights update atlas texels in place at the authored resolution.
+    if (private_atlas) dynamic_texture_resolution_ = false;
+    render_quality_percent_ = private_atlas ? 100.0f : render_quality_percent;
     release_textures();
     int count = setting_->GetTextureCount();
     textures_.assign((size_t)count, nullptr);
@@ -229,7 +234,7 @@ bool NativeModel::load_textures(BongoCatError *error,
         texture_context.start = .50f + .45f * (float)i /
             (float)(count > 0 ? count : 1);
         textures_[(size_t)i] = acquire_texture(
-            path(setting_->GetTextureFileName(i)), direct_textures_,
+            path(setting_->GetTextureFileName(i)), direct_textures_, private_atlas,
             dynamic_texture_resolution_, render_quality_percent_, display_width,
             display_height, reference_width,
             reference_height, (int)texture_limit,
@@ -253,6 +258,7 @@ bool NativeModel::load_textures(BongoCatError *error,
     }
     renderer_width_ = width_;
     renderer_height_ = height_;
+    load_mouse_lights();
     return true;
 }
 

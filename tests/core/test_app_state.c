@@ -408,6 +408,8 @@ static void check_four_hands(void) {
     parameter_count = overlay_key_calls = 0;
 }
 
+void bongo_cat_test_mouse_feedback(BongoCatApp *app);
+
 int main(void) {
     check_four_hands();
     check_stick_deadzone();
@@ -418,10 +420,9 @@ int main(void) {
     app.live2d = (BongoCatLive2D *)(uintptr_t)1;
     app.overlay = (BongoCatOverlay *)(uintptr_t)1;
 
-    BongoCatInputEvent event = input(BONGO_CAT_INPUT_MOUSE_DOWN, "Middle", 1.0f);
-    bongo_cat_app_apply_input(&app, &event);
+    bongo_cat_test_mouse_feedback(&app);
     CHECK(parameter_count == 0);
-    event = input(BONGO_CAT_INPUT_MOUSE_DOWN, "Left", 1.0f);
+    BongoCatInputEvent event = input(BONGO_CAT_INPUT_MOUSE_DOWN, "Left", 1.0f);
     bongo_cat_app_apply_input(&app, &event);
     CHECK(app.left_mouse_down);
     CHECK(parameter("ParamMouseLeftDown") == 1.0f);
@@ -433,18 +434,6 @@ int main(void) {
     bongo_cat_app_apply_input(&app, &event);
     CHECK(!app.right_mouse_down && app.pointer_hit_dirty);
     CHECK(parameter("ParamMouseRightDown") == 0.0f);
-
-    event = input(BONGO_CAT_INPUT_MOUSE_DOWN, "Back", 1.0f);
-    bongo_cat_app_apply_input(&app, &event);
-    event = input(BONGO_CAT_INPUT_MOUSE_DOWN, "Forward", 1.0f);
-    bongo_cat_app_apply_input(&app, &event);
-    CHECK(app.side_mouse_down);
-    event = input(BONGO_CAT_INPUT_MOUSE_UP, "Back", 0.0f);
-    bongo_cat_app_apply_input(&app, &event);
-    CHECK(app.side_mouse_down && app.forward_mouse_down);
-    event = input(BONGO_CAT_INPUT_MOUSE_UP, "Forward", 0.0f);
-    bongo_cat_app_apply_input(&app, &event);
-    CHECK(!app.side_mouse_down);
 
     event = input(BONGO_CAT_INPUT_KEY_DOWN, "KeyA", 1.0f);
     bongo_cat_app_apply_input(&app, &event);

@@ -185,6 +185,19 @@ void bongo_cat_app_reset_gamepad(BongoCatApp *app) {
 
 void bongo_cat_app_apply_input(BongoCatApp *app, const BongoCatInputEvent *event) {
     if (!app || !event) return;
+    if (event->kind == BONGO_CAT_INPUT_MOUSE_WHEEL) {
+        if (strcmp(event->name, "Horizontal") == 0) app->mouse_wheel_x += event->value;
+        else if (strcmp(event->name, "Vertical") == 0) app->mouse_wheel_y += event->value;
+        else return;
+        if (event->value != 0.0f && bongo_cat_live2d_pulse_scroll_wheel(app->live2d))
+            app->dirty = true;
+        return;
+    }
+    if ((event->kind == BONGO_CAT_INPUT_MOUSE_DOWN ||
+        event->kind == BONGO_CAT_INPUT_MOUSE_UP) && strcmp(event->name, "Middle") == 0) {
+        app->middle_mouse_down = event->kind == BONGO_CAT_INPUT_MOUSE_DOWN;
+        return;
+    }
     bool keyboard = event->kind == BONGO_CAT_INPUT_KEY_DOWN ||
         event->kind == BONGO_CAT_INPUT_KEY_UP;
     if (keyboard) app->input_diagnostics.received_keys++;
@@ -238,8 +251,8 @@ void bongo_cat_app_apply_input(BongoCatApp *app, const BongoCatInputEvent *event
     case BONGO_CAT_INPUT_MOUSE_UP: {
         bool left = strcmp(event->name, "Left") == 0;
         bool right = strcmp(event->name, "Right") == 0;
-        bool side = strcmp(event->name, "Back") == 0 ||
-            strcmp(event->name, "Forward") == 0;
+        bool back = strcmp(event->name, "Back") == 0;
+        bool side = back || strcmp(event->name, "Forward") == 0;
         if (!left && !right && !side)
             break;
         bool down = event->kind == BONGO_CAT_INPUT_MOUSE_DOWN;
@@ -251,15 +264,16 @@ void bongo_cat_app_apply_input(BongoCatApp *app, const BongoCatInputEvent *event
             changed = app->right_mouse_down != down;
             app->right_mouse_down = down;
         } else {
-            if (strcmp(event->name, "Back") == 0) app->back_mouse_down = down;
-            else app->forward_mouse_down = down;
-            bool side_down = app->back_mouse_down || app->forward_mouse_down;
-            changed = app->side_mouse_down != side_down;
-            app->side_mouse_down = side_down;
+            bool *button = back ? &app->back_mouse_down : &app->forward_mouse_down;
+            changed = *button != down;
+            *button = down;
+            app->side_mouse_down = app->back_mouse_down || app->forward_mouse_down;
         }
         if (changed) app->mouse_button_event_pending = true;
         if (!down) app->pointer_hit_dirty = true;
         if (side) {
+            bongo_cat_live2d_set_side_mouse_buttons(app->live2d,
+                app->back_mouse_down, app->forward_mouse_down);
             app->dirty = true;
             break;
         }
@@ -286,6 +300,8 @@ void bongo_cat_app_reapply_input(BongoCatApp *app) {
         app->left_mouse_down ? 1.0f : 0.0f);
     bongo_cat_live2d_set_parameter(app->live2d, "ParamMouseRightDown",
         app->right_mouse_down ? 1.0f : 0.0f);
+    bongo_cat_live2d_set_side_mouse_buttons(app->live2d,
+        app->back_mouse_down, app->forward_mouse_down);
     for (size_t i = 0; i < app->active_input_count; ++i) {
         BongoCatInputEvent *event = &app->active_inputs[i];
         if (event->kind == BONGO_CAT_INPUT_KEY_DOWN) {

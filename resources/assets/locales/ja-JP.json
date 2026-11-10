@@ -63,6 +63,8 @@
           "appSettings": "アプリ",
           "launchOnStartup": "起動時に実行",
           "gameCompatibility": "ゲーム互換モード",
+          "microphoneCapture": "マイク入力",
+          "microphoneLevel": "マイク入力レベル",
           "showTrayIcon": "トレイアイコンを表示",
           "appearanceSettings": "外観",
           "themeMode": "テーマ",
@@ -77,6 +79,7 @@
           "darkMode": "ダーク"
         },
         "hints": {
+          "microphoneUnavailable": "マイクを利用できません。マイク入力をオフにしてからオンにしてください。",
           "showTrayIcon": "有効にすると、システムトレイにアプリアイコンを表示します。",
           "autostartFailed": "起動時に実行する設定を更新できません",
           "inputMonitoringPermission": "許可したら再起動してください。",

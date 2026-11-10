@@ -185,8 +185,11 @@ typedef struct BongoCatApp {
     bool click_through_forced_applied;
     bool left_mouse_down;
     bool right_mouse_down;
+    bool middle_mouse_down;
     bool side_mouse_down;
     bool back_mouse_down, forward_mouse_down;
+    /* Signed wheel steps collected by the most recent input drain. */
+    float mouse_wheel_x, mouse_wheel_y;
     bool mouse_button_event_pending;
     bool model_pointer_anchor_ready;
     float model_pointer_anchor_x, model_pointer_anchor_y;

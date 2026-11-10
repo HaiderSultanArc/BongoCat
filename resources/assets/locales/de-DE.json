@@ -63,6 +63,8 @@
           "appSettings": "Anwendung",
           "launchOnStartup": "Beim Systemstart ausführen",
           "gameCompatibility": "Spielkompatibilitätsmodus",
+          "microphoneCapture": "Mikrofon erfassen",
+          "microphoneLevel": "Mikrofonpegel",
           "showTrayIcon": "Infobereichssymbol anzeigen",
           "appearanceSettings": "Erscheinungsbild",
           "themeMode": "Design",
@@ -77,6 +79,7 @@
           "darkMode": "Dunkel"
         },
         "hints": {
+          "microphoneUnavailable": "Mikrofon nicht verfügbar. Schalte die Erfassung aus und wieder ein.",
           "showTrayIcon": "Wenn aktiviert, wird das Anwendungssymbol im Infobereich angezeigt.",
           "autostartFailed": "Die Einstellung für den automatischen Start konnte nicht aktualisiert werden",
           "inputMonitoringPermission": "Nach dem Erlauben neu starten.",

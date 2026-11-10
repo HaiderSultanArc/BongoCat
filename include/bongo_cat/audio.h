@@ -18,5 +18,10 @@ bool bongo_cat_audio_any_playing(const BongoCatAudio *audio);
 bool bongo_cat_audio_is_playing(const BongoCatAudio *audio, const char *path);
 void bongo_cat_audio_stop_path(BongoCatAudio *audio, const char *path);
 void bongo_cat_audio_set_enabled(BongoCatAudio *audio, bool enabled);
+void bongo_cat_audio_set_microphone_capture(BongoCatAudio *audio, bool enabled);
+/* Returns a level from 0 to 1, or -1 when capture is unavailable. */
+float bongo_cat_audio_microphone_level(const BongoCatAudio *audio);
+/* RMS of voiced input only, or 0 during silence or when capture is unavailable. */
+float bongo_cat_audio_microphone_voice_level(const BongoCatAudio *audio);
 
 #endif

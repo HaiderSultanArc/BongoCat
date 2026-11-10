@@ -15,7 +15,9 @@
 #include <Motion/ACubismMotion.hpp>
 #include <Math/CubismMatrix44.hpp>
 #include <Rendering/OpenGL/CubismRenderer_OpenGLES2.hpp>
+#include "bongo_cat/gl_api.h"
 #include <SDL3/SDL_opengl.h>
+#include <array>
 #include <map>
 #include <memory>
 #include <set>
@@ -31,6 +33,7 @@ class ParameterOverrideUpdater;
 struct ModelTexture;
 struct TextureRefresh;
 struct TextureResolution;
+enum MouseLightSlot { rear_light, front_light, wheel_light, mouse_light_count };
 
 class NativeModel final : public Csm::CubismUserModel {
 public:
@@ -69,6 +72,9 @@ public:
     void cancel_texture_refresh_async();
     bool refresh_texture_resolution(bool active, bool allow_start);
     bool update(float delta_seconds);
+    void set_microphone_level(float rms);
+    void set_side_mouse_buttons(bool back, bool forward);
+    bool pulse_scroll_wheel();
     void draw();
     void set_mirror(bool mirror);
     void set_vertical_flip(bool flipped);
@@ -136,6 +142,14 @@ private:
     void configure_builtin_accessories(const std::vector<unsigned char> &moc);
     void load_expressions();
     void load_effects();
+    void load_microphone_mouth();
+    bool has_hs_avatar() const;
+    bool update_microphone_mouth(float delta_seconds);
+    void draw_microphone_mouth(Csm::CubismMatrix44 &projection);
+    void release_microphone_mouth();
+    void load_mouse_lights();
+    bool update_mouse_lights(float delta_seconds);
+    void draw_mouse_lights();
     void load_motions(BongoCatLive2DLoadProgress progress, void *userdata);
     void start_idle_motion();
     void update_geometry();
@@ -206,6 +220,24 @@ private:
     std::vector<float> motion_preview_parts_;
     Csm::csmVector<Csm::CubismIdHandle> eye_blink_ids_;
     Csm::csmVector<Csm::CubismIdHandle> lip_sync_ids_;
+    std::vector<int> microphone_parameters_;
+    int microphone_face_ = -1;
+    float microphone_target_ = 0.0f;
+    float microphone_open_ = 0.0f;
+    BongoCatGL microphone_gl_{};
+    GLuint microphone_program_ = 0;
+    GLuint microphone_vao_ = 0;
+    GLuint microphone_vbo_ = 0;
+    bool microphone_gl_failed_ = false;
+    struct MouseLight {
+        float remaining = 0.0f;
+        bool down = false;
+        bool pending = false;
+        int uploaded = -1;
+    };
+    std::array<MouseLight, mouse_light_count> mouse_lights_{};
+    std::array<std::vector<unsigned char>, 3> mouse_light_patches_{};
+    int mouse_light_mip_levels_ = 0;
     std::string directory_;
 #ifdef CSM_TARGET_MAC_GL
     CoreProfileBuffers core_buffers_;

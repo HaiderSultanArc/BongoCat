@@ -1,6 +1,7 @@
 #include "audio_internal.h"
 
 #include <SDL3/SDL.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,6 +22,8 @@ BongoCatAudio *bongo_cat_audio_create(BongoCatError *error) {
         return NULL;
     }
     audio->enabled = true;
+    atomic_init(&audio->microphone_level, 0.0f);
+    atomic_init(&audio->microphone_voice_level, 0.0f);
     return audio;
 }
 
@@ -87,8 +90,115 @@ void bongo_cat_audio_set_enabled(BongoCatAudio *audio, bool enabled) {
     if (!enabled) bongo_cat_audio_reset(audio);
 }
 
+/* Voiced vowels have repeating waveforms. Require agreement in both shape and
+   energy across a plausible pitch period to reject a single loud transient. */
+static float microphone_voiced_rms(const float *samples) {
+    enum {
+        MIN_LAG = MICROPHONE_SAMPLE_RATE / 500,
+        MAX_LAG = MICROPHONE_SAMPLE_RATE / 75 + 1,
+        COMPARE = MICROPHONE_WINDOW - MAX_LAG,
+    };
+    const float *recent = samples + MAX_LAG;
+    float energy = 0.0f;
+    for (size_t i = 0; i < COMPARE; ++i) energy += recent[i] * recent[i];
+    const float minimum_rms = 0.004f;
+    if (energy < COMPARE * minimum_rms * minimum_rms) return 0.0f;
+
+    float previous = 0.0f;
+    bool rising = false;
+    for (size_t lag = MIN_LAG - 1; lag <= MAX_LAG; ++lag) {
+        const float *earlier = recent - lag;
+        float dot = 0.0f, earlier_energy = 0.0f;
+        for (size_t i = 0; i < COMPARE; ++i) {
+            dot += recent[i] * earlier[i];
+            earlier_energy += earlier[i] * earlier[i];
+        }
+        float similarity = 2.0f * dot / (energy + earlier_energy);
+        // Look for a peak inside the pitch range rather than low rumble's slope.
+        if (lag > MIN_LAG && rising && previous >= 0.74f && similarity < previous)
+            return sqrtf(energy / COMPARE);
+        rising = similarity > previous;
+        previous = similarity;
+    }
+    return 0.0f;
+}
+
+void bongo_cat_audio_analyze_microphone(BongoCatAudio *audio, const float *samples, size_t count) {
+    enum { HOP = MICROPHONE_SAMPLE_RATE / 100 };
+    MicrophoneVoice *voice = &audio->microphone_voice;
+    float energy = 0.0f;
+    for (size_t i = 0; i < count; ++i) {
+        float sample = samples && isfinite(samples[i]) ? samples[i] : 0.0f;
+        energy += sample * sample;
+        // Remove low rumble and emphasize the range containing voice harmonics.
+        voice->low += 0.06f * (sample - voice->low);
+        voice->band += 0.50f * (sample - voice->low - voice->band);
+        voice->samples[voice->count++] = voice->band;
+        if (voice->count != MICROPHONE_WINDOW) continue;
+
+        float level = microphone_voiced_rms(voice->samples);
+        bool voiced = level > 0.0f;
+        // Confirm onset across two windows and bridge one brief dropout.
+        if (voiced == voice->previous_voiced)
+            atomic_store_explicit(&audio->microphone_voice_level, level, memory_order_relaxed);
+        voice->previous_voiced = voiced;
+        memmove(voice->samples, voice->samples + HOP,
+            (MICROPHONE_WINDOW - HOP) * sizeof(*voice->samples));
+        voice->count = MICROPHONE_WINDOW - HOP;
+    }
+    float level = count ? fminf(1.0f, sqrtf(energy / (float)count)) : 0.0f;
+    atomic_store_explicit(&audio->microphone_level, level, memory_order_relaxed);
+}
+
+static void capture_microphone(ma_device *device, void *output,
+    const void *input, ma_uint32 frame_count) {
+    (void)output;
+    bongo_cat_audio_analyze_microphone(device->pUserData, input, frame_count);
+}
+
+void bongo_cat_audio_set_microphone_capture(BongoCatAudio *audio, bool enabled) {
+    if (!audio) return;
+    if (audio->microphone_initialized) {
+        if (enabled && ma_device_is_started(&audio->microphone)) return;
+        ma_device_uninit(&audio->microphone);
+        audio->microphone_initialized = false;
+    }
+    atomic_store_explicit(&audio->microphone_level, 0.0f, memory_order_relaxed);
+    atomic_store_explicit(&audio->microphone_voice_level, 0.0f, memory_order_relaxed);
+    audio->microphone_voice = (MicrophoneVoice){0};
+    if (!enabled) return;
+
+    ma_device_config config = ma_device_config_init(ma_device_type_capture);
+    config.capture.format = ma_format_f32;
+    config.capture.channels = 1;
+    config.sampleRate = MICROPHONE_SAMPLE_RATE;
+    config.periodSizeInMilliseconds = 10;
+    config.dataCallback = capture_microphone;
+    config.pUserData = audio;
+    config.wasapi.noAutoStreamRouting = MA_TRUE;
+    if (ma_device_init(NULL, &config, &audio->microphone) != MA_SUCCESS) return;
+    if (audio->microphone.pContext->backend != ma_backend_null &&
+        ma_device_start(&audio->microphone) == MA_SUCCESS)
+        audio->microphone_initialized = true;
+    else
+        ma_device_uninit(&audio->microphone);
+}
+
+float bongo_cat_audio_microphone_level(const BongoCatAudio *audio) {
+    if (!audio || !audio->microphone_initialized ||
+        !ma_device_is_started(&audio->microphone)) return -1.0f;
+    return atomic_load_explicit(&audio->microphone_level, memory_order_relaxed);
+}
+
+float bongo_cat_audio_microphone_voice_level(const BongoCatAudio *audio) {
+    if (!audio || !audio->microphone_initialized ||
+        !ma_device_is_started(&audio->microphone)) return 0.0f;
+    return atomic_load_explicit(&audio->microphone_voice_level, memory_order_relaxed);
+}
+
 void bongo_cat_audio_destroy(BongoCatAudio *audio) {
     if (!audio) return;
+    bongo_cat_audio_set_microphone_capture(audio, false);
     bongo_cat_audio_reset(audio);
     free(audio);
 }

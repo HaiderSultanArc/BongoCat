@@ -35,6 +35,13 @@ void bongo_cat_windows_input_packet(WindowsInputState *state,
     }
     const RAWMOUSE *mouse = &packet->data.mouse;
     bongo_cat_windows_input_buttons(state, device, mouse->usButtonFlags);
+    float steps = (float)(SHORT)mouse->usButtonData / WHEEL_DELTA;
+    if (steps && (mouse->usButtonFlags & RI_MOUSE_WHEEL))
+        bongo_cat_windows_input_push_event(state, BONGO_CAT_INPUT_MOUSE_WHEEL,
+            "Vertical", steps);
+    if (steps && (mouse->usButtonFlags & RI_MOUSE_HWHEEL))
+        bongo_cat_windows_input_push_event(state, BONGO_CAT_INPUT_MOUSE_WHEEL,
+            "Horizontal", steps);
     RECT bounds = {0};
     if (mouse->usFlags & MOUSE_MOVE_ABSOLUTE) {
         bool virtual_desktop = (mouse->usFlags & MOUSE_VIRTUAL_DESKTOP) != 0;

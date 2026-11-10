@@ -150,7 +150,7 @@ void test_models(void) {
     CHECK(behaviors->count == 7);
     CHECK(behaviors->entries[0].kind == BONGO_CAT_BEHAVIOR_MOTION);
     CHECK(strcmp(behaviors->entries[0].group, "CAT_motion") == 0);
-    CHECK(strstr(behaviors->entries[0].sound, "live2d_motion1.flac") != NULL);
+    CHECK(behaviors->entries[0].sound[0] == '\0');
     CHECK(behaviors->entries[6].kind == BONGO_CAT_BEHAVIOR_EXPRESSION);
 
     bongo_cat_behaviors_clear(behaviors); free(behaviors);

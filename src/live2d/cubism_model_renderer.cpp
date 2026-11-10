@@ -38,6 +38,7 @@ private:
 void NativeModel::draw() {
     auto *renderer = GetRenderer<Csm::Rendering::CubismRenderer_OpenGLES2>();
     if (!_model || !renderer || width_ <= 0 || height_ <= 0) return;
+    draw_mouse_lights();
 #ifdef CSM_TARGET_MAC_GL
     CoreProfileBinding binding(core_buffers_);
 #endif
@@ -67,6 +68,7 @@ void NativeModel::draw() {
         DrawFrame frame(manager);
         renderer->DrawModel();
     }
+    draw_microphone_mouth(projection);
     if (trim_offscreen_pool_) {
         // The first completed frame establishes how many targets this model
         // needs. Drop unused targets retained by a previously loaded model.
@@ -113,6 +115,7 @@ void NativeModel::release_renderer() {
 }
 
 void NativeModel::release_render_resources() {
+    release_microphone_mouth();
     release_textures();
     release_renderer();
 }

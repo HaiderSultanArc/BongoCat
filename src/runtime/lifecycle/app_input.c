@@ -113,12 +113,17 @@ static void suppress_shortcut(BongoCatApp *app, const BongoCatInputEvent *event)
 
 void bongo_cat_app_drain_input(BongoCatApp *app, bool allow_shortcuts) {
     BongoCatInputEvent event;
+    app->mouse_wheel_x = app->mouse_wheel_y = 0.0f;
     while (bongo_cat_input_pop(&app->input, &event)) {
         bool keyboard = event.kind == BONGO_CAT_INPUT_KEY_DOWN ||
             event.kind == BONGO_CAT_INPUT_KEY_UP;
         if (keyboard) app->input_diagnostics.drained_keys++;
         if (app->smoke_ignore_global_input) {
             if (keyboard) app->input_diagnostics.ignored_keys++;
+            continue;
+        }
+        if (event.kind == BONGO_CAT_INPUT_MOUSE_WHEEL) {
+            bongo_cat_app_apply_input(app, &event);
             continue;
         }
         if (strcmp(event.name, "CapsLock") == 0)

@@ -63,6 +63,8 @@
           "appSettings": "應用程式",
           "launchOnStartup": "開機自動啟動",
           "gameCompatibility": "遊戲相容模式",
+          "microphoneCapture": "麥克風擷取",
+          "microphoneLevel": "麥克風音量",
           "showTrayIcon": "顯示托盤圖示",
           "appearanceSettings": "外觀",
           "themeMode": "主題",
@@ -77,6 +79,7 @@
           "darkMode": "深色模式"
         },
         "hints": {
+          "microphoneUnavailable": "麥克風無法使用。請關閉後重新開啟擷取以重試。",
           "showTrayIcon": "啟用後，在系統托盤中顯示應用程式圖示。",
           "autostartFailed": "無法更新開機啟動設定",
           "inputMonitoringPermission": "授權後請重新啟動",

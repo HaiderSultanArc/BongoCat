@@ -54,6 +54,49 @@ static bool audible(BongoCatAudio *audio) {
     return false;
 }
 
+static float microphone_voice_level(const BongoCatAudio *audio) {
+    return atomic_load_explicit(&audio->microphone_voice_level, memory_order_relaxed);
+}
+
+static void microphone_voice(BongoCatAudio *audio) {
+    float samples[MICROPHONE_SAMPLE_RATE / 100] = {0};
+    const size_t count = sizeof(samples) / sizeof(*samples);
+    uint32_t random = 1;
+    for (unsigned block = 0; block < 60; ++block) {
+        for (size_t i = 0; i < count; ++i) {
+            size_t frame = block * count + i;
+            random = random * 1664525u + 1013904223u;
+            float noise = (float)(random >> 16) / 32768.0f - 1.0f;
+            float click = (float)(frame % 533);
+            float hum = 6.2831853f * 60.0f * (float)frame / MICROPHONE_SAMPLE_RATE;
+            samples[i] = 0.05f * sinf(hum) + 0.045f * noise + noise * expf(-click / 15.0f);
+        }
+        bongo_cat_audio_analyze_microphone(audio, samples, count);
+        CHECK(microphone_voice_level(audio) == 0.0f);
+    }
+    CHECK(atomic_load_explicit(&audio->microphone_level, memory_order_relaxed) > 0.02f);
+
+    const float pitches[] = {90.0f, 290.0f};
+    for (size_t pitch = 0; pitch < sizeof(pitches) / sizeof(*pitches); ++pitch) {
+        for (unsigned block = 0; block < 100; ++block) {
+            for (size_t i = 0; i < count; ++i) {
+                float phase = 6.2831853f * pitches[pitch] * (float)(block * count + i) /
+                    MICROPHONE_SAMPLE_RATE;
+                float click = block == 40 && i == 10 ? 0.6f : 0.0f;
+                samples[i] = 0.075f * sinf(phase) + 0.025f * sinf(phase * 2.0f) + click;
+            }
+            /* The detector must work even when capture delivers partial windows. */
+            bongo_cat_audio_analyze_microphone(audio, samples, 19);
+            bongo_cat_audio_analyze_microphone(audio, samples + 19, count - 19);
+            if (block >= 3) CHECK(microphone_voice_level(audio) > 0.02f);
+        }
+        memset(samples, 0, sizeof(samples));
+        for (unsigned block = 0; block < 4; ++block)
+            bongo_cat_audio_analyze_microphone(audio, samples, count);
+        CHECK(microphone_voice_level(audio) == 0.0f);
+    }
+}
+
 int main(void) {
     char first[BONGO_CAT_PATH_CAP], second[BONGO_CAT_PATH_CAP];
     snprintf(first, sizeof(first), "bongocat-audio-%llu-\xE9\x9F\xB3.wav",
@@ -65,6 +108,7 @@ int main(void) {
     BongoCatAudio *audio = bongo_cat_audio_create(&error);
     CHECK(audio != NULL);
     if (!audio) return 1;
+    microphone_voice(audio);
     CHECK(!audio->initialized);
     CHECK(!bongo_cat_audio_any_playing(audio));
     CHECK(offline(audio));
@@ -87,9 +131,7 @@ int main(void) {
     /* Stop/reset while asynchronous file loads are still pending. */
     bongo_cat_audio_stop(audio); CHECK(count(audio) == 0);
     CHECK(!bongo_cat_audio_any_playing(audio));
-    CHECK(bongo_cat_audio_play(audio,
-        BONGO_CAT_NATIVE_SOURCE_DIR "/resources/assets/models/standard/live2d_motion1.flac",
-        &error) == BONGO_CAT_OK);
+    CHECK(bongo_cat_audio_play(audio, second, &error) == BONGO_CAT_OK);
     CHECK(audible(audio));
     bongo_cat_audio_set_enabled(audio, false);
     CHECK(!audio->initialized && count(audio) == 0);

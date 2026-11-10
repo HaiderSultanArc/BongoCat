@@ -56,11 +56,13 @@ void bongo_cat_app_apply_mouse(BongoCatApp *app) {
         button_changed = reconcile_button(app, &app->right_mouse_down,
             (buttons & SDL_BUTTON_RMASK) != 0, "ParamMouseRightDown") ||
             button_changed;
-        app->back_mouse_down = (buttons & SDL_BUTTON_X1MASK) != 0;
-        app->forward_mouse_down = (buttons & SDL_BUTTON_X2MASK) != 0;
-        bool side_down = app->back_mouse_down || app->forward_mouse_down;
-        if (app->side_mouse_down != side_down) {
-            app->side_mouse_down = side_down;
+        bool back = (buttons & SDL_BUTTON_X1MASK) != 0;
+        bool forward = (buttons & SDL_BUTTON_X2MASK) != 0;
+        if (app->back_mouse_down != back || app->forward_mouse_down != forward) {
+            app->back_mouse_down = back;
+            app->forward_mouse_down = forward;
+            app->side_mouse_down = back || forward;
+            bongo_cat_live2d_set_side_mouse_buttons(app->live2d, back, forward);
             button_changed = true;
             app->dirty = true;
         }

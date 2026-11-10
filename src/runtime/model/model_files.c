@@ -280,6 +280,7 @@ static bool select_model_with_error(BongoCatApp *app, const char *id,
         bongo_cat_overlay_clear(app->overlay);
     }
     snprintf(app->loaded_model, sizeof(app->loaded_model), "%s", entry->id);
+    bongo_cat_overlay_set_key_colors(app->overlay, strncmp(entry->id, "hs_", 3) == 0);
     size_t saved_behaviors = bongo_cat_app_saved_behavior_count(app, entry->id);
     bongo_cat_app_restore_behavior_state(app, entry->id);
     SDL_Log("[runtime] Behavior restore summary: model=%s saved=%zu "

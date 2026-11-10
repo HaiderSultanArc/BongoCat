@@ -117,6 +117,23 @@ bool NativeModel::load(const char *directory, const char *setting_file,
     if (progress) progress(userdata, .49f);
     return true;
 }
+bool NativeModel::has_hs_avatar() const {
+    if (setting_->GetTextureCount() != 1) return false;
+    // These variants share character and mouse UVs. The other atlas regions
+    // carry each game's artwork and must be kept with their own model.
+    constexpr const char *variants[][2] = {
+        {"hs_dark_souls_mouse.moc3", "hoodie-dark-souls.2048/texture_00.png"},
+        {"hoodie-boy.moc3", "hoodie-boy.2048/texture_00.png"},
+        {"hoodie-league.moc3", "hoodie-league.2048/texture_00.png"},
+        {"hs_ruby_static.moc3", "hs_where_winds_meet.2048/texture_00.png"},
+    };
+    for (const auto &variant : variants) {
+        if (std::strcmp(setting_->GetModelFileName(), variant[0]) == 0 &&
+            std::strcmp(setting_->GetTextureFileName(0), variant[1]) == 0) return true;
+    }
+    return false;
+}
+
 bool NativeModel::load_model(BongoCatError *error) {
     const char *name = setting_->GetModelFileName();
     std::vector<unsigned char> bytes = read(path(name));
@@ -217,6 +234,7 @@ void NativeModel::load_effects() {
         eye_blink_ids_.PushBack(setting_->GetEyeBlinkParameterId(i));
     for (int i = 0; i < setting_->GetLipSyncParameterCount(); ++i)
         lip_sync_ids_.PushBack(setting_->GetLipSyncParameterId(i));
+    load_microphone_mouth();
     if (setting_->GetEyeBlinkParameterCount() > 0) {
         _eyeBlink = Csm::CubismEyeBlink::Create(setting_);
         _updateScheduler.AddUpdatableList(

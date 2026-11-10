@@ -63,6 +63,8 @@
           "appSettings": "应用",
           "launchOnStartup": "开机自启动",
           "gameCompatibility": "游戏兼容模式",
+          "microphoneCapture": "麦克风采集",
+          "microphoneLevel": "麦克风音量",
           "showTrayIcon": "显示托盘图标",
           "appearanceSettings": "外观",
           "themeMode": "主题",
@@ -77,6 +79,7 @@
           "darkMode": "暗色模式"
         },
         "hints": {
+          "microphoneUnavailable": "麦克风不可用。请关闭后重新开启采集以重试。",
           "showTrayIcon": "启用后，在系统托盘中显示应用图标。",
           "autostartFailed": "无法更新开机启动设置",
           "inputMonitoringPermission": "授权后请重启",

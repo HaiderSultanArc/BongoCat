@@ -207,7 +207,8 @@ if(BUILD_TESTING)
   endif()
 
   add_executable(bongo_cat_app_state_tests
-    tests/core/test_app_state.c src/core/app_state.c
+    tests/core/test_app_state.c tests/core/test_mouse_feedback.c
+    src/core/app_state.c src/core/sound_shortcut.c
     src/runtime/model/model_behavior_state.c)
   target_link_libraries(bongo_cat_app_state_tests PRIVATE bongo_cat_warnings)
   target_include_directories(bongo_cat_app_state_tests PRIVATE
@@ -223,6 +224,9 @@ if(BUILD_TESTING)
   target_link_libraries(bongo_cat_gamepad_tests PRIVATE
     SDL3::SDL3-static bongo_cat_warnings)
   add_test(NAME gamepad-state COMMAND bongo_cat_gamepad_tests)
+  if(DEFINED SDL_VIRTUAL_JOYSTICK AND NOT SDL_VIRTUAL_JOYSTICK)
+    set_tests_properties(gamepad-state PROPERTIES DISABLED TRUE)
+  endif()
   set_tests_properties(gamepad-state PROPERTIES SKIP_RETURN_CODE 77 TIMEOUT 30)
 
   set(BONGO_CAT_MVER_IMPORT_TEST_SOURCES
@@ -256,8 +260,8 @@ if(BUILD_TESTING)
   if(MSVC)
     set_property(SOURCE ${BONGO_CAT_MVER_IMPORT_TEST_SOURCES}
       APPEND PROPERTY COMPILE_OPTIONS "/experimental:c11atomics")
-    set_property(SOURCE tests/platform/test_windows_capture.c APPEND PROPERTY
-      COMPILE_OPTIONS "/experimental:c11atomics")
+    set_property(SOURCE tests/platform/test_windows_capture.c tests/media/test_audio.c
+      APPEND PROPERTY COMPILE_OPTIONS "/experimental:c11atomics")
   endif()
   add_test(NAME model-import-unit COMMAND bongo_cat_mver_import_tests)
   add_test(NAME model-import-notice COMMAND bongo_cat_mver_import_tests
@@ -298,6 +302,8 @@ if(BUILD_TESTING)
   if(BONGO_CAT_CUBISM_ENABLED)
     add_executable(bongo_cat_core_profile_tests tests/live2d/test_core_profile.cpp)
     target_include_directories(bongo_cat_core_profile_tests PRIVATE src/live2d)
+    target_include_directories(bongo_cat_core_profile_tests SYSTEM PRIVATE
+      ${BONGO_CAT_STB_INCLUDE_DIR})
     target_link_libraries(bongo_cat_core_profile_tests PRIVATE
       bongo_cat_runtime bongo_cat_warnings)
     add_test(NAME live2d-core-profile COMMAND bongo_cat_core_profile_tests)

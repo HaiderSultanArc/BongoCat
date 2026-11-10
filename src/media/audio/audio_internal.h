@@ -6,9 +6,20 @@
 #ifdef _WIN32
 #include <SDL3/SDL_atomic.h>
 #endif
+#include <stdatomic.h>
 
 #define AUDIO_VOICES 50
 #define AUDIO_IDLE_MS 5000
+#define MICROPHONE_SAMPLE_RATE 8000
+#define MICROPHONE_WINDOW 240
+
+typedef struct MicrophoneVoice {
+    float samples[MICROPHONE_WINDOW];
+    size_t count;
+    float low;
+    float band;
+    bool previous_voiced;
+} MicrophoneVoice;
 
 typedef struct AudioVoice {
     ma_sound sound;
@@ -29,8 +40,14 @@ struct BongoCatAudio {
     uint64_t next_collect;
     bool initialized;
     bool enabled;
+    ma_device microphone;
+    bool microphone_initialized;
+    _Atomic float microphone_level;
+    _Atomic float microphone_voice_level;
+    MicrophoneVoice microphone_voice;
 };
 
+void bongo_cat_audio_analyze_microphone(BongoCatAudio *audio, const float *samples, size_t count);
 void bongo_cat_audio_voice_release(AudioVoice *voice);
 ma_result bongo_cat_audio_initialize(BongoCatAudio *audio);
 

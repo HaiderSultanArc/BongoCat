@@ -67,6 +67,7 @@ bool NativeModel::update(float delta_seconds) {
     expression_frame_pending_ = false;
     expire_expression_fade();
     apply_parameter_overrides();
+    bool microphone_changed = update_microphone_mouth(delta_seconds);
     _opacity = _model->GetModelOpacity();
     update_geometry();
     /* These snapshots contain only real Core indices. Read their contiguous
@@ -78,7 +79,8 @@ bool NativeModel::update(float delta_seconds) {
         Live2D::Cubism::Core::csmGetPartOpacities(_model->GetModel())) || result;
     if (std::fabs(opacity_snapshot_ - _opacity) > 0.00001f) result = true;
     opacity_snapshot_ = _opacity;
-    return result;
+    bool mouse_lights_changed = update_mouse_lights(delta_seconds);
+    return result || microphone_changed || mouse_lights_changed;
 }
 
 void NativeModel::set_dragging(float x, float y, bool angle_z) {

@@ -20,6 +20,9 @@ void bongo_cat_preferences_render(BongoCatPreferences *value) {
     }
     bongo_cat_preferences_drag_tick(value);
     uint64_t now = SDL_GetTicksNS();
+    if (bongo_cat_preferences_showing_microphone(value) &&
+        now - value->last_render_ns >= 50000000ull &&
+        bongo_cat_preferences_update_microphone(value)) value->render_dirty = true;
     bool raster_due = value->pending_raster_scale > 0.0f &&
         value->raster_retry_ns <= now;
     if (value->render_retry_ns > now ||

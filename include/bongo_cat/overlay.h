@@ -24,6 +24,7 @@ BongoCatResult bongo_cat_overlay_load(BongoCatOverlay *overlay,
     const char *model_directory, bool model_pointer_preferred,
     const BongoCatLive2DRenderOptions *render_options, BongoCatError *error);
 int bongo_cat_overlay_key(BongoCatOverlay *overlay, const char *name, bool pressed);
+void bongo_cat_overlay_set_key_colors(BongoCatOverlay *overlay, bool enabled);
 bool bongo_cat_overlay_effect(BongoCatOverlay *overlay, const char *path);
 bool bongo_cat_overlay_hand_active(const BongoCatOverlay *overlay, bool right);
 bool bongo_cat_overlay_mver_pointer_enabled(const BongoCatOverlay *overlay);

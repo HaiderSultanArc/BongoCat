@@ -118,6 +118,8 @@ bool bongo_cat_app_initialize(BongoCatApp *app, int argc, char **argv,
     else bongo_cat_audio_set_enabled(app->audio, true);
     scan_models(app);
     if (!load_selected_model(app, error)) return false;
+    if (!app->secondary_pet && app->settings.app.microphone_capture)
+        bongo_cat_audio_set_microphone_capture(app->audio, true);
     bongo_cat_startup_stage(app, "model-ready");
     if (app->smoke_import_path[0]) {
         BongoCatError import_error = {0};

@@ -15,6 +15,7 @@ void bongo_cat_overlay_clear_textures(BongoCatOverlay *value) {
     value->composed_cover = false;
     value->composite_dirty = false;
     value->model_pointer_preferred = false;
+    value->background_fills_canvas = false;
     value->reference_width = value->reference_height = 0;
     for (size_t i = 0; i < 4; ++i) {
         if (value->cache[i].texture) glDeleteTextures(1, &value->cache[i].texture);
@@ -100,6 +101,12 @@ BongoCatResult bongo_cat_overlay_load(BongoCatOverlay *value,
             value->reference_width = background_width;
             value->reference_height = background_height;
         }
+        int width = value->reference_width, height = value->reference_height;
+        /* Full-canvas backgrounds can be authored at an integer pixel scale. */
+        value->background_fills_canvas = width > 0 && height > 0 &&
+            background_width > width && background_height > height &&
+            background_width % width == 0 && background_height % height == 0 &&
+            background_width / width == background_height / height;
     }
 #else
     (void)render_options;

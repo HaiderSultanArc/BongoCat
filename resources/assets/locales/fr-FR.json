@@ -63,6 +63,8 @@
           "appSettings": "Application",
           "launchOnStartup": "Lancer au démarrage",
           "gameCompatibility": "Mode de compatibilité des jeux",
+          "microphoneCapture": "Capture du microphone",
+          "microphoneLevel": "Niveau du microphone",
           "showTrayIcon": "Afficher l'icône dans la zone de notification",
           "appearanceSettings": "Apparence",
           "themeMode": "Thème",
@@ -77,6 +79,7 @@
           "darkMode": "Sombre"
         },
         "hints": {
+          "microphoneUnavailable": "Microphone indisponible. Désactivez puis réactivez la capture pour réessayer.",
           "showTrayIcon": "Lorsque cette option est activée, l'icône de l'application apparaît dans la zone de notification.",
           "autostartFailed": "Impossible de modifier le lancement au démarrage",
           "inputMonitoringPermission": "Redémarrez après l'autorisation.",

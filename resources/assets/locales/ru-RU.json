@@ -63,6 +63,8 @@
           "appSettings": "Приложение",
           "launchOnStartup": "Запускать при входе в систему",
           "gameCompatibility": "Режим совместимости с играми",
+          "microphoneCapture": "Захват звука с микрофона",
+          "microphoneLevel": "Уровень сигнала микрофона",
           "showTrayIcon": "Показывать значок в трее",
           "appearanceSettings": "Оформление",
           "themeMode": "Тема",
@@ -77,6 +79,7 @@
           "darkMode": "Тёмная"
         },
         "hints": {
+          "microphoneUnavailable": "Микрофон недоступен. Выключите и снова включите захват звука.",
           "showTrayIcon": "Если включено, значок приложения отображается в системном трее.",
           "autostartFailed": "Не удалось изменить настройку автозапуска",
           "inputMonitoringPermission": "Перезапустите после разрешения.",
